@@ -46,7 +46,7 @@ class apb_monitor extends uvm_monitor;
             if(!vif.presetn) begin
                 tr.t_type = RESET_t;
             end
-            else if(vif.pwrite) begin
+            else if(vif.psel && vif.penable && vif.pwrite) begin
                 do begin
                     @(posedge vif.pclk);
                 end
@@ -57,7 +57,7 @@ class apb_monitor extends uvm_monitor;
                 tr.PSLVERR = vif.pslverr;
                 `uvm_info("Monitor: ", $sformatf("Transaction: %0s, addr:%0d, wdata:%0d , slverr: %0d", tr.t_type.name(), tr.PADDR, tr.PWDATA, tr.PSLVERR), UVM_LOW)
             end
-            else if(!vif.pwrite) begin
+            else if(vif.psel && vif.penable && !vif.pwrite) begin
                 do begin
                     @(posedge vif.pclk);
                 end
