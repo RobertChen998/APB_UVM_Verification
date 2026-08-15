@@ -34,10 +34,10 @@ APB_UVM_Verification/
 
 ## Run
 
-Use the Vivado simulation flow and start the testbench from `tb_top.sv`.
+Use the Vivado simulation flow and run tcl from `regression.tcl`.
 
 ```systemverilog
-run_test("random_test");
+source regression.tcl;
 ```
 
 This project is intended for APB protocol verification and UVM learning practice.
