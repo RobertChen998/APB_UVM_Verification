@@ -50,19 +50,14 @@ class apb_driver extends uvm_driver #(transaction);
                 vif.pwdata <= req.PWDATA;
                 @(posedge vif.pclk);
                 vif.penable <= 1'b1;
-                // @(posedge vif.pready);
                 do begin
                     @(posedge vif.pclk);
                 end
                 while (vif.pready !== 1'b1);
                 req.PSLVERR = vif.pslverr;
                 `uvm_info("Driver", $sformatf("Transaction: %0s, addr:%0d, wdata:%0d ,rdata: %0d, slverr: %0d", req.t_type.name(), req.PADDR, req.PWDATA, req.PRDATA, req.PSLVERR), UVM_LOW)
-                // req.PSLVERR = vif.pslverr;
                 vif.penable <= 1'b0;
                 vif.psel <= 1'b0;
-                
-                // 要送到 DUT 的訊號要加 <= 讓它在 NBA region 才更新
-                // 避免和 DUT 的 posedge 更新產生 race condition (DUT 在 Active Region 取樣)
             end
             else if(req.t_type == READ_t) begin
                 vif.presetn <= 1'b1;
@@ -71,7 +66,6 @@ class apb_driver extends uvm_driver #(transaction);
                 vif.psel <= 1'b1;
                 @(posedge vif.pclk);
                 vif.penable <= 1'b1;
-                // @(posedge vif.pready);
                 do begin
                     @(posedge vif.pclk);
                 end
@@ -79,8 +73,6 @@ class apb_driver extends uvm_driver #(transaction);
                 req.PRDATA = vif.prdata;
                 req.PSLVERR = vif.pslverr;
                 `uvm_info("Driver", $sformatf("Transaction: %0s, addr:%0d, wdata:%0d ,rdata: %0d, slverr: %0d", req.t_type.name(), req.PADDR, req.PWDATA, req.PRDATA, req.PSLVERR), UVM_LOW)
-                // req.PRDATA = vif.prdata;
-                // req.PSLVERR = vif.pslverr;
                 vif.penable <= 1'b0;
                 vif.psel <= 1'b0;
                 

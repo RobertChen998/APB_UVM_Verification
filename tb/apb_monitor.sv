@@ -47,8 +47,6 @@ class apb_monitor extends uvm_monitor;
                 tr.t_type = RESET_t;
             end
             else if(vif.pwrite) begin
-                //@(posedge vif.pready);
-                // posedge 完立刻抓會有問題，會抓不到同一cycle 的 PRDATA
                 do begin
                     @(posedge vif.pclk);
                 end
@@ -60,8 +58,6 @@ class apb_monitor extends uvm_monitor;
                 `uvm_info("Monitor: ", $sformatf("Transaction: %0s, addr:%0d, wdata:%0d , slverr: %0d", tr.t_type.name(), tr.PADDR, tr.PWDATA, tr.PSLVERR), UVM_LOW)
             end
             else if(!vif.pwrite) begin
-                //@(posedge vif.pready);
-                // posedge 完立刻抓會有問題，會抓不到同一cycle 的 PRDATA
                 do begin
                     @(posedge vif.pclk);
                 end

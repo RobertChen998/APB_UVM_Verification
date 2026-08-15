@@ -1,5 +1,3 @@
-// sequence 設定也可以用 uvm_config_wrapper::set() 來設定
-// 但用seq.start(sequencer) 的方式比較直覺，且可以在 run_phase 中控制 sequence 的執行時機
 
 
 class apb_test extends uvm_test;
@@ -19,11 +17,6 @@ class apb_test extends uvm_test;
     function void end_of_elaboration_phase(uvm_phase phase);
         uvm_top.print_topology();
     endfunction: end_of_elaboration_phase
-
-    // task run_phase(uvm_phase phase); // 通常出現在 test 中 => 全域控制
-    //     uvm_objection obj = phase.get_objection();
-    //     obj.set_drain_time(this, 200ns);
-    // endtask
 
 endclass
 

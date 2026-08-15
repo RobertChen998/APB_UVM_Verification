@@ -153,9 +153,8 @@ class random_seq extends uvm_sequence #(transaction);
             req.addr_rand_c.constraint_mode(1);
             req.error_addr_c.constraint_mode(0);
             req.addr_c.constraint_mode(0);
-            ok = req.randomize();
+            ok = req.randomize() with { t_type dist {RESET_t := 1, WRITE_t := 60, READ_t := 39 }; };
             `uvm_send(req)
         end
     endtask
 endclass
-

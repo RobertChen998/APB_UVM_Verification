@@ -9,20 +9,34 @@ interface apb_if ();
     logic pready;
     logic pslverr;
     logic [31:0] prdata;
-// 1. SETUP 後下一拍必須進 ACCESS
-    property p_setup_to_access;
+
+    // 1. Setup to Access transition: When PSEL is asserted and PENABLE is deasserted, the next cycle should transition to Access state with PENABLE asserted.
+    //    During this transition, the signals PADDR and PWRITE should remain stable.
+    //    If PWRITE is asserted, then PWDATA should also remain stable during this transition.
+    property p_stable_setup_to_access;
         @(posedge pclk)
         disable iff (!presetn)
         (psel && !penable)
-        |=> (psel && penable);
+        |=> (psel && penable &&
+            $stable({paddr, pwrite}) && (!pwrite || $stable(pwdata)));
     endproperty
 
-    a_setup_to_access:
-        assert property(p_setup_to_access)
-        else $error("APB: SETUP did not transition to ACCESS");
+    a_stable_setup_to_access:
+        assert property(p_stable_setup_to_access)
+        else $error("APB: signals changed during setup to access");
 
+    // 2. Access phase should follow Setup phase: When PENABLE is asserted, it indicates in the previous cycle, PSEL should have been asserted and PENABLE should have been deasserted.
+    property p_access_follows_setup;
+        @(posedge pclk)
+        disable iff (!presetn)
+        $rose(penable) |-> $past(psel && !penable);
+    endproperty
 
-    // 2. ACCESS 如果 PREADY=0，控制訊號必須保持穩定
+    a_access_follows_setup:
+        assert property(p_access_follows_setup)
+        else $error("APB: Access phase did not follow Setup phase");
+
+    // 3. When PREADY is not asserted yet, the signals PADDR, PWRITE, PSEL, PENABLE, and PWDATA should remain stable until pready is asserted.
     property p_stable_during_wait;
         @(posedge pclk)
         disable iff (!presetn)
@@ -35,31 +49,8 @@ interface apb_if ();
         else $error("APB: signals changed during wait state");
 
 
-    // 3. PENABLE 不應該在沒有 PSEL 時拉高
-    property p_penable_requires_psel;
-        @(posedge pclk)
-        disable iff (!presetn)
-        penable |-> psel;
-    endproperty
+    // 4. When PSLVERR is asserted, it indicates the completion of the current transfer. In current cycle, PSEL and PENABLE should be asserted.
 
-    a_penable_requires_psel:
-        assert property(p_penable_requires_psel)
-        else $error("APB: PENABLE asserted without PSEL");
-
-
-    // 4. PREADY 只能在 transfer completion 時有意義/拉高
-    property p_pready_only_on_completion;
-        @(posedge pclk)
-        disable iff (!presetn)
-        pready |-> (psel && penable);
-    endproperty
-
-    a_pready_only_on_completion:
-        assert property(p_pready_only_on_completion)
-        else $error("APB: PREADY asserted outside completion cycle");
-
-    // 5. PSLVERR 只能在 transfer completion 時有意義/拉高
-    // 如果 PSLVERR=1，那現在一定必須是 transaction completion cycle
     property p_pslverr_only_on_completion;
         @(posedge pclk)
         disable iff (!presetn)
@@ -69,5 +60,18 @@ interface apb_if ();
     a_pslverr_only_on_completion:
         assert property(p_pslverr_only_on_completion)
         else $error("APB: PSLVERR asserted outside completion cycle");
+
+    // 5. After a transfer is completed, PENABLE should be deasserted.
+    property p_exit_access_after_completion;
+        @(posedge pclk)
+        disable iff (!presetn)
+        (psel && penable && pready)
+        |=> !penable;
+    endproperty
+
+    a_exit_access_after_completion:
+        assert property(p_exit_access_after_completion)
+        else $error("APB: PENABLE remained asserted after transfer completion");
     
 endinterface
+

@@ -27,12 +27,6 @@ module tb_top;
         .pslverr(vif.pslverr)
     );
 
-    // initial begin
-    //     vif.pclk<=0;
-    // end
-
-    // always #10 vif.pclk <= ~vif.pclk;
-
     initial begin
     vif.pclk = 0;
 
