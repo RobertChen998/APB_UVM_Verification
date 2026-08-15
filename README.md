@@ -8,6 +8,7 @@ This project is a SystemVerilog UVM testbench for an APB slave. It checks protoc
 - UVM sequence, driver, monitor, agent, and scoreboard
 - Write/read/random test scenarios
 - Coverage tracking and result checking
+- Random delay modeling in DUT
 
 ## Structure
 
