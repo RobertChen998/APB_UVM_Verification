@@ -42,29 +42,44 @@ class apb_monitor extends uvm_monitor;
     task run_phase(uvm_phase phase);
         forever begin
             @(posedge vif.pclk);
-            tr = transaction::type_id::create("tr", this);
-            if(!vif.presetn) begin
-                tr.t_type = RESET_t;
-            end
-            else if(vif.psel && vif.penable && vif.pready && vif.pwrite) begin
-                tr.t_type = WRITE_t;
-                tr.PADDR = vif.paddr;
-                tr.PWDATA = vif.pwdata;
-                tr.PSLVERR = vif.pslverr;
-                `uvm_info("Monitor: ", $sformatf("Transaction: %0s, addr:%0d, wdata:%0d , slverr: %0d", tr.t_type.name(), tr.PADDR, tr.PWDATA, tr.PSLVERR), UVM_LOW)
-            end
-            else if(vif.psel && vif.penable && vif.pready && !vif.pwrite) begin
-                tr.t_type = READ_t;
-                tr.PADDR = vif.paddr;
-                tr.PRDATA = vif.prdata;
-                tr.PSLVERR = vif.pslverr;
-                `uvm_info("Monitor: ", $sformatf("Transaction: %0s, addr:%0d, rdata:%0d , slverr: %0d", tr.t_type.name(), tr.PADDR, tr.PRDATA, tr.PSLVERR),UVM_LOW)
-            end
-            item_collected_port.write(tr);
-            apb_monitor_cg.sample();
-        end
 
-    endtask: run_phase
+            if (!vif.presetn) begin
+                tr = transaction::type_id::create("tr", this);
+                tr.t_type = RESET_t;
+
+                item_collected_port.write(tr);
+            end
+
+            else if (vif.psel && vif.penable && vif.pready) begin
+                tr = transaction::type_id::create("tr", this);
+
+                tr.PADDR   = vif.paddr;
+                tr.PSLVERR = vif.pslverr;
+
+                if (vif.pwrite) begin
+                    tr.t_type = WRITE_t;
+                    tr.PWDATA = vif.pwdata;
+
+                    `uvm_info("Monitor",
+                        $sformatf("Transaction: %0s, addr:%0d, wdata:%0d, slverr:%0d",
+                        tr.t_type.name(), tr.PADDR, tr.PWDATA, tr.PSLVERR),
+                        UVM_LOW)
+                end
+                else begin
+                    tr.t_type = READ_t;
+                    tr.PRDATA = vif.prdata;
+
+                    `uvm_info("Monitor",
+                        $sformatf("Transaction: %0s, addr:%0d, rdata:%0d, slverr:%0d",
+                        tr.t_type.name(), tr.PADDR, tr.PRDATA, tr.PSLVERR),
+                        UVM_LOW)
+                end
+
+                item_collected_port.write(tr);
+                apb_monitor_cg.sample();
+            end
+        end
+    endtask
 
     function void report_phase(uvm_phase phase);
         `uvm_info(get_type_name(), $sformatf("Report: APB Monitor Coverage: %0d", apb_monitor_cg.get_inst_coverage()), UVM_LOW)

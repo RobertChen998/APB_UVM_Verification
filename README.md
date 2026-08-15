@@ -27,7 +27,6 @@ APB_UVM_Verification/
 │   ├── apb_test.sv
 │   └── apb_sequencer.sv
 ├── dut.sv
-├── self_dut.sv
 ├── regression.tcl
 └── README.md
 ```
