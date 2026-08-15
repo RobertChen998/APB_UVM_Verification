@@ -28,8 +28,7 @@ APB_UVM_Verification/
 ├── dut.sv
 ├── self_dut.sv
 ├── regression.tcl
-├── README.md
-└── ...
+└── README.md
 ```
 
 ## Run
